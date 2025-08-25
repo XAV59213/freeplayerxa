@@ -1,12 +1,14 @@
+from homeassistant.const import Platform
+
 DOMAIN = "freeplayerxa"
-PLATFORMS = ["media_player"]
+PLATFORMS = [Platform.MEDIA_PLAYER]  # ⬅️ enum moderne
+
 DEFAULT_NAME = "Free Player"
 CONF_CODE = "code"
 CONF_HOST = "host"
 CONF_CHANNELS = "channels"
 CONF_KEY_DELAY = "key_delay"
 
-# Full key map supported by the Freebox remote HTTP API
 KEY_MAP = {
     "power": "power",
     "ok": "ok",
