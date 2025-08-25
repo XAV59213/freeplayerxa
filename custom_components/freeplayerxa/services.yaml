@@ -1,1 +1,9 @@
-
+remote:
+  description: Send a specific key to the Freebox Player.
+  fields:
+    entity_id:
+      description: The entity ID of the Freebox Player (e.g., media_player.tv_salon).
+      example: media_player.tv_salon
+    code:
+      description: The remote key to send (e.g., power, netflix, 1).
+      example: netflix
