@@ -22,9 +22,10 @@
       "step": {
         "init": {
           "title": "Options",
-          "description": "Cartographie des cha\u00eenes (optionnel). Une par ligne : '1: TF1' ou 'TF1=1'",
+          "description": "Cartographie des cha\u00eenes (optionnel, une par ligne : '1: TF1' ou 'TF1=1') et d\u00e9lai entre touches (ms) pour la s\u00e9lection des cha\u00eenes.",
           "data": {
-            "channels": "Liste des cha\u00eenes"
+            "channels": "Liste des cha\u00eenes",
+            "key_delay": "D\u00e9lai entre touches (ms)"
           }
         }
       }
