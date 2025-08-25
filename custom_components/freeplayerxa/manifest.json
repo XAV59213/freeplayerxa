@@ -4,11 +4,9 @@
   "version": "0.1.0",
   "documentation": "https://github.com/XAV59213/freeplayerxa",
   "issue_tracker": "https://github.com/XAV59213/freeplayerxa/issues",
-  "codeowners": [
-    "@XAV59213"
-  ],
+  "codeowners": ["@XAV59213"],
   "config_flow": true,
-  "iot_class": "local_polling",
+  "iot_class": "local_push",
   "integration_type": "device",
   "requirements": []
 }
