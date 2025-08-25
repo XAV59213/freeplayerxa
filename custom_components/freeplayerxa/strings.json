@@ -22,9 +22,10 @@
       "step": {
         "init": {
           "title": "Options",
-          "description": "Optional channel mapping. One per line: '1: TF1' or 'TF1=1'",
+          "description": "Optional channel mapping (one per line: '1: TF1' or 'TF1=1') and key delay (ms) for channel selection.",
           "data": {
-            "channels": "Channels map"
+            "channels": "Channels map",
+            "key_delay": "Key delay (ms)"
           }
         }
       }
