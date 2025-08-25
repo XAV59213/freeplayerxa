@@ -1,17 +1,14 @@
 from __future__ import annotations
-
 import asyncio
 import logging
 from typing import Any
-
 from homeassistant.components.media_player import MediaPlayerEntity, MediaPlayerEntityFeature
 from homeassistant.components.media_player.const import MediaPlayerState
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.entity import DeviceInfo
-
-from .const import DOMAIN, CONF_CHANNELS, KEY_MAP
+from .const import DOMAIN, CONF_CHANNELS, CONF_KEY_DELAY, KEY_MAP
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -33,6 +30,7 @@ class FreePlayerXAEntity(MediaPlayerEntity):
         self._attr_unique_id = f"{client.host}-{client.code}"
         self._state = MediaPlayerState.OFF
         self._muted = False
+        self._attr_available = True
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -69,13 +67,17 @@ class FreePlayerXAEntity(MediaPlayerEntity):
             line = line.strip()
             if not line or line.startswith("#"):
                 continue
-            if ":" in line:
-                num, label = line.split(":", 1)
-            elif "=" in line:
-                label, num = line.split("=", 1)
-            else:
-                num, label = line, f"Ch {line}"
-            names.append(label.strip())
+            try:
+                if ":" in line:
+                    num, label = line.split(":", 1)
+                elif "=" in line:
+                    label, num = line.split("=", 1)
+                else:
+                    num, label = line, f"Ch {line}"
+                names.append(label.strip())
+            except ValueError:
+                _LOGGER.warning(f"Invalid channel mapping line: {line}")
+                continue
         return names or None
 
     def _channel_map(self) -> dict[str, str]:
@@ -85,58 +87,71 @@ class FreePlayerXAEntity(MediaPlayerEntity):
             line = line.strip()
             if not line or line.startswith("#"):
                 continue
-            if ":" in line:
-                num, label = line.split(":", 1)
-                mapping[label.strip()] = num.strip()
-            elif "=" in line:
-                label, num = line.split("=", 1)
-                mapping[label.strip()] = num.strip()
-            else:
-                mapping[f"Ch {line}"] = line.strip()
+            try:
+                if ":" in line:
+                    num, label = line.split(":", 1)
+                    mapping[label.strip()] = num.strip()
+                elif "=" in line:
+                    label, num = line.split("=", 1)
+                    mapping[label.strip()] = num.strip()
+                else:
+                    mapping[f"Ch {line}"] = line.strip()
+            except ValueError:
+                _LOGGER.warning(f"Invalid channel mapping line: {line}")
+                continue
         return mapping
 
     async def async_turn_on(self) -> None:
-        ok = await self._client.async_send_key(KEY_MAP["power"])  # toggle power
+        ok = await self._client.async_send_key(KEY_MAP["power"])
         if ok:
             self._state = MediaPlayerState.ON
             self.async_write_ha_state()
 
     async def async_turn_off(self) -> None:
-        ok = await self._client.async_send_key(KEY_MAP["power"])  # toggle power
+        ok = await self._client.async_send_key(KEY_MAP["power"])
         if ok:
             self._state = MediaPlayerState.OFF
             self.async_write_ha_state()
 
     async def async_volume_up(self) -> None:
-        await self._client.async_send_key(KEY_MAP["vol_up"]) 
+        await self._client.async_send_key(KEY_MAP["vol_up"])
 
     async def async_volume_down(self) -> None:
-        await self._client.async_send_key(KEY_MAP["vol_down"]) 
+        await self._client.async_send_key(KEY_MAP["vol_down"])
 
     async def async_mute_volume(self, mute: bool) -> None:
-        ok = await self._client.async_send_key(KEY_MAP["mute"]) 
+        ok = await self._client.async_send_key(KEY_MAP["mute"])
         if ok:
             self._muted = not self._muted
             self.async_write_ha_state()
 
     async def async_media_next_track(self) -> None:
-        await self._client.async_send_key(KEY_MAP["chan_up"]) 
+        await self._client.async_send_key(KEY_MAP["chan_up"])
 
     async def async_media_previous_track(self) -> None:
-        await self._client.async_send_key(KEY_MAP["chan_down"]) 
+        await self._client.async_send_key(KEY_MAP["chan_down"])
 
     async def async_select_source(self, source: str) -> None:
         mapping = self._channel_map()
         number = mapping.get(source)
         if not number:
+            _LOGGER.warning(f"Channel '{source}' not found in mapping")
             return
+        key_delay = self._entry.options.get(CONF_KEY_DELAY, 80) / 1000.0  # Convert ms to seconds
         for d in str(number):
-            await self._client.async_send_key(d)
-            await asyncio.sleep(0.08)
-        await self._client.async_send_key(KEY_MAP["ok"]) 
+            if d not in KEY_MAP:
+                _LOGGER.warning(f"Invalid digit '{d}' in channel number")
+                continue
+            ok = await self._client.async_send_key(d)
+            if not ok:
+                _LOGGER.error(f"Failed to send digit '{d}' for channel '{source}'")
+                return
+            await asyncio.sleep(key_delay)
+        await self._client.async_send_key(KEY_MAP["ok"])
 
     async def async_update(self) -> None:
         reachable = await self._client.async_ping()
-        if reachable:
-            self._state = MediaPlayerState.ON
         self._attr_available = reachable
+        if not reachable:
+            self._state = MediaPlayerState.OFF
+        self.async_write_ha_state()
