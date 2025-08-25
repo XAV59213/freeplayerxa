@@ -4,8 +4,9 @@ DEFAULT_NAME = "Free Player"
 CONF_CODE = "code"
 CONF_HOST = "host"
 CONF_CHANNELS = "channels"
+CONF_KEY_DELAY = "key_delay"
 
-# Minimal key map supported by the Freebox remote HTTP API
+# Full key map supported by the Freebox remote HTTP API
 KEY_MAP = {
     "power": "power",
     "ok": "ok",
@@ -18,6 +19,44 @@ KEY_MAP = {
     "vol_up": "vol_inc",
     "vol_down": "vol_dec",
     "mute": "mute",
-    "chan_up": "prgm+",
-    "chan_down": "prgm-",
+    "chan_up": "prgm_inc",
+    "chan_down": "prgm_dec",
+    "red": "red",
+    "green": "green",
+    "blue": "blue",
+    "yellow": "yellow",
+    "list": "list",
+    "tv": "tv",
+    "swap": "swap",
+    "info": "info",
+    "epg": "epg",
+    "mail": "mail",
+    "media": "media",
+    "help": "help",
+    "options": "options",
+    "pip": "pip",
+    "rec": "rec",
+    "bwd": "bwd",
+    "prev": "prev",
+    "play": "play",
+    "fwd": "fwd",
+    "next": "next",
+    "replay": "replay",
+    "vod": "vod",
+    "whatson": "whatson",
+    "records": "records",
+    "youtube": "youtube",
+    "radios": "radios",
+    "canalvod": "canalvod",
+    "netflix": "netflix",
+    "0": "0",
+    "1": "1",
+    "2": "2",
+    "3": "3",
+    "4": "4",
+    "5": "5",
+    "6": "6",
+    "7": "7",
+    "8": "8",
+    "9": "9",
 }
