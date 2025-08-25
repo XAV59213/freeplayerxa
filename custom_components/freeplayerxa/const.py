@@ -1,7 +1,7 @@
 from homeassistant.const import Platform
 
 DOMAIN = "freeplayerxa"
-PLATFORMS = [Platform.MEDIA_PLAYER]  # ⬅️ enum moderne
+PLATFORMS = [Platform.MEDIA_PLAYER]  
 
 DEFAULT_NAME = "Free Player"
 CONF_CODE = "code"
