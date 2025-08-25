@@ -1,4 +1,7 @@
 {
-  "name": "Free Player XA",
-  "render_readme": true
+  "name": "ree Player XA",
+  "content_in_root": false,
+  "homeassistant": "2025.4.0",
+  "render_readme": true,
+  "hacs": "1.0.0"
 }
