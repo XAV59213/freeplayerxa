@@ -4,7 +4,7 @@ from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
 from .const import DOMAIN, DEFAULT_NAME, CONF_CODE, CONF_HOST, CONF_CHANNELS, CONF_KEY_DELAY
-from . import FreeboxRemoteClient
+from .client import FreeboxRemoteClient  # ⬅️ plus d’import depuis __init__.py
 
 DATA_SCHEMA = vol.Schema({
     vol.Required("name", default=DEFAULT_NAME): str,
@@ -25,9 +25,10 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             name = user_input["name"].strip()
             host = user_input[CONF_HOST].strip()
             code = str(user_input[CONF_CODE]).strip()
-            # Prevent duplicates by host or name
+
             await self.async_set_unique_id(f"{host}-{code}")
             self._abort_if_unique_id_configured()
+
             valid = await _validate(self.hass, host, code)
             if not valid:
                 errors["base"] = "cannot_connect"
@@ -35,7 +36,7 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 return self.async_create_entry(
                     title=name,
                     data={"name": name, CONF_HOST: host, CONF_CODE: code},
-                    options={CONF_KEY_DELAY: 80}  # Default delay: 80ms
+                    options={CONF_KEY_DELAY: 80}
                 )
         return self.async_show_form(step_id="user", data_schema=DATA_SCHEMA, errors=errors)
 
@@ -51,13 +52,13 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         self._entry = entry
 
     async def async_step_init(self, user_input=None):
-        errors = {}
         if user_input is not None:
             return self.async_create_entry(title="Options", data=user_input)
+
         current_channels = self._entry.options.get(CONF_CHANNELS, "")
         current_delay = self._entry.options.get(CONF_KEY_DELAY, 80)
         schema = vol.Schema({
             vol.Optional(CONF_CHANNELS, default=current_channels): str,
             vol.Optional(CONF_KEY_DELAY, default=current_delay): vol.All(vol.Coerce(int), vol.Range(min=0, max=1000)),
         })
-        return self.async_show_form(step_id="init", data_schema=schema, errors=errors)
+        return self.async_show_form(step_id="init", data_schema=schema)
