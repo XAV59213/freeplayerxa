@@ -1,11 +1,9 @@
 from __future__ import annotations
-
 import voluptuous as vol
 from homeassistant import config_entries
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResult
-
-from .const import DOMAIN, DEFAULT_NAME, CONF_CODE, CONF_HOST, CONF_CHANNELS
+from .const import DOMAIN, DEFAULT_NAME, CONF_CODE, CONF_HOST, CONF_CHANNELS, CONF_KEY_DELAY
 from . import FreeboxRemoteClient
 
 DATA_SCHEMA = vol.Schema({
@@ -27,21 +25,21 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             name = user_input["name"].strip()
             host = user_input[CONF_HOST].strip()
             code = str(user_input[CONF_CODE]).strip()
-
             # Prevent duplicates by host or name
             await self.async_set_unique_id(f"{host}-{code}")
             self._abort_if_unique_id_configured()
-
             valid = await _validate(self.hass, host, code)
             if not valid:
                 errors["base"] = "cannot_connect"
             else:
-                return self.async_create_entry(title=name, data={"name": name, CONF_HOST: host, CONF_CODE: code})
-
+                return self.async_create_entry(
+                    title=name,
+                    data={"name": name, CONF_HOST: host, CONF_CODE: code},
+                    options={CONF_KEY_DELAY: 80}  # Default delay: 80ms
+                )
         return self.async_show_form(step_id="user", data_schema=DATA_SCHEMA, errors=errors)
 
     async def async_step_import(self, user_input):
-        # Support YAML import if provided, same fields as UI
         return await self.async_step_user(user_input)
 
     @staticmethod
@@ -56,8 +54,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         errors = {}
         if user_input is not None:
             return self.async_create_entry(title="Options", data=user_input)
-
-        # Existing options
         current_channels = self._entry.options.get(CONF_CHANNELS, "")
-        schema = vol.Schema({vol.Optional(CONF_CHANNELS, default=current_channels): str})
+        current_delay = self._entry.options.get(CONF_KEY_DELAY, 80)
+        schema = vol.Schema({
+            vol.Optional(CONF_CHANNELS, default=current_channels): str,
+            vol.Optional(CONF_KEY_DELAY, default=current_delay): vol.All(vol.Coerce(int), vol.Range(min=0, max=1000)),
+        })
         return self.async_show_form(step_id="init", data_schema=schema, errors=errors)
