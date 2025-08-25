@@ -1,0 +1,33 @@
+{
+  "title": "Free Player XA",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Add a Free Player",
+        "description": "Enter the Player IP and its remote code (from your Freebox settings).",
+        "data": {
+          "name": "TV name",
+          "host": "Player IP address or hostname",
+          "code": "Remote code"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Cannot reach the Player or code is invalid."
+    },
+    "abort": {
+      "already_configured": "This Player is already configured."
+    },
+    "options": {
+      "step": {
+        "init": {
+          "title": "Options",
+          "description": "Optional channel mapping. One per line: '1: TF1' or 'TF1=1'",
+          "data": {
+            "channels": "Channels map"
+          }
+        }
+      }
+    }
+  }
+}

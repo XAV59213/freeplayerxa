@@ -1,0 +1,33 @@
+{
+  "title": "Free Player XA",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Ajouter un Free Player",
+        "description": "Saisissez l'IP du Player et son code t\u00e9l\u00e9commande (depuis les r\u00e9glages Freebox).",
+        "data": {
+          "name": "Nom de la TV",
+          "host": "Adresse IP ou nom d'h\u00f4te",
+          "code": "Code t\u00e9l\u00e9commande"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Impossible de joindre le Player ou code invalide."
+    },
+    "abort": {
+      "already_configured": "Ce Player est d\u00e9j\u00e0 configur\u00e9."
+    },
+    "options": {
+      "step": {
+        "init": {
+          "title": "Options",
+          "description": "Cartographie des cha\u00eenes (optionnel). Une par ligne : '1: TF1' ou 'TF1=1'",
+          "data": {
+            "channels": "Liste des cha\u00eenes"
+          }
+        }
+      }
+    }
+  }
+}
