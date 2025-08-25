@@ -1,10 +1,11 @@
 from __future__ import annotations
-
+import logging
 from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-
 from .const import DOMAIN, PLATFORMS
+
+_LOGGER = logging.getLogger(__name__)
 
 class FreeboxRemoteClient:
     def __init__(self, hass: HomeAssistant, host: str, code: str):
@@ -31,8 +32,12 @@ class FreeboxRemoteClient:
             params["long"] = "true"
         try:
             async with self._session.get(base, params=params, timeout=5) as resp:
-                return resp.status == 200
-        except Exception:
+                if resp.status != 200:
+                    _LOGGER.warning(f"Failed to send key '{key}' to {self._host}: HTTP {resp.status}")
+                    return False
+                return True
+        except Exception as e:
+            _LOGGER.error(f"Error sending key '{key}' to {self._host}: {e}")
             return False
 
     async def async_ping(self) -> bool:
@@ -40,14 +45,15 @@ class FreeboxRemoteClient:
         return await self.async_send_key("home")
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Set up Free Player XA from a config entry."""
     data = entry.data
     client = FreeboxRemoteClient(hass, data["host"], data["code"])
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = {"client": client}
-
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    """Unload a config entry."""
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
         hass.data[DOMAIN].pop(entry.entry_id, None)
